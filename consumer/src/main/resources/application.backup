@@ -1,0 +1,24 @@
+server:
+  port: 10001
+
+spring:
+  application:
+    name: consumer
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        register-enabled: true
+    sentinel:
+      transport:
+        dashboard: localhost:8080
+        port: 8719
+
+# 负载均衡策略
+# provider:
+  # ribbon:
+    # NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RandomRule
+
+feign:
+  sentinel:
+    enabled: true

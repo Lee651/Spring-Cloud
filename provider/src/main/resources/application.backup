@@ -1,0 +1,11 @@
+server:
+  port: 10002
+
+spring:
+  application:
+    name: provider
+  cloud:
+    nacos:
+      discovery:
+        register-enabled: true
+        server-addr: localhost:8848

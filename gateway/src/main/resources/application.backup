@@ -1,0 +1,88 @@
+server:
+  port: 10004
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        register-enabled: true
+    gateway:
+      discovery:
+        locator:
+          # 当为true时,表示可以使用服务名进行访问,之前调用微服务的时候地址是:http://localhost:10001/consumer/info,现在可以通过网关这样访问:http://localhost:10004/consumer/consumer/info
+          # 一般设置为false,不用暴露系统的服务名,更安全
+          enabled: false
+
+      # filter:
+        # 过滤掉响应头中安全相关的信息
+        # secure-headers:
+          # disable:
+            # - strict-transport-security
+            # - x-download-options
+      routes:
+        # 路由标识,要求唯一,名字随便写,但是通常的做法是将其和需要调用的服务名保持一致
+        - id: consumer
+          # 请求最终被转发到的目的地址,固定写法: lb(load balance),后面的是需要负载均衡哪个服务名
+          uri: lb://consumer
+          # 路由优先级: 数字越小优先级越高
+          order: 1
+          # 断言数组,将满足条件的请求转发到uri指定的服务中(具体有哪些断言可以在org.springframework.cloud.gateway.handler.predicate包中)
+          predicates:
+            # 通过网关访问consumer服务时的路径
+            - Path=/Lee/**
+            # 访问时需要携带的参数,参数名为origin,值为[a-zA-Z0-9_]开头(\d+表示以数字开头)
+            # - Query=origin,\w+
+            # 访问时需要在请求头中携带token,token的值必须以字母开头
+            # - Header=token,\w+
+            # 访问的方式必须是GET请求类型
+            # - Method=GET
+            # After表示在指定的时间之后才能进行访问
+            # - After=2023-03-03T00:00:00+08:00[Asia/Shanghai]
+            # Before表示在指定的时间之前才能进行访问
+            # - Before=2023-03-04T00:00:00+08:00[Asia/Shanghai]
+            # 只能是指定的ip才能进行访问
+            # - RemoteAddr=192.168.126.1
+          # 局部过滤器数组,在请求传递的过程中对请求做一些修改
+          filters:
+            # 配合Path进行使用,表示去掉Path中的前缀的个数
+            - StripPrefix=1
+            # - CustomLocationFilterOfParameter=Lee, Lee1
+            # 设置响应头参数
+            # - AddResponseHeader=X-Response-Default-Name, rectorLee
+            # 设置请求头参数
+            # - AddRequestHeader=X-Request-Default-Name, rectorLee
+            # 对指定响应头去重
+            # - DedupeResponseHeader=X-Response-Default-Name,RETAIN_LAST
+            # 添加请求参数
+            # - AddRequestParameter=X-Request-Parameter, rectorLee1
+            # 删除请求头参数
+            # - RemoveRequestHeader=X-Request-Default-Name
+            # 删除响应头参数
+            # - RemoveResponseHeader=X-Response-Default-Name
+            # 删除请求参数
+            # - RemoveRequestParameter=X-Request-Parameter
+            # 重写请求路径
+            # - RewritePath=
+            # 修改响应头参数的值
+            # - RewriteResponseHeader=X-Response-Default-Name, rectorLee, li
+            # 保存session
+            # - SaveSession
+            # 在响应头中添加安全相关信息
+            # - SecureHeaders
+            # 设置请求头,将原来的值修改为指定的值,如果不存在就新建
+            # - SetRequestHeader=X-Request-Default-Name, li
+            # 设置响应头,将原来的值修改为指定的值,如果不存在就新建
+            # - SetResponseHeader=X-Response-Default-Name, li
+            # 设置返回的状态码
+            # - SetStatus=500
+            # 给请求路径添加前缀(此时访问consumer的info接口的路径变成了http://localhost:10004/Lee/info)
+            # - PrefixPath=/consumer
+            # 设置请求大小,单位有KB、MB、B,默认是B,不设置则默认上限为5MB
+            # - RequestSize=0
+            # 用于键值对的赋值,当请求头中有X-Request-Default-Name时,新增X-Request-Default-Name-1,值与X-Request-Default-Name一样
+            # - MapRequestHeader=X-Request-Default-Name, X-Request-Default-Name-1
+            # 在请求转发到服务提供者时保留host信息
+            # - PreserveHostHeader
