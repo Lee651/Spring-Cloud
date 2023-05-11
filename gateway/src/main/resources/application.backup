@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: gateway
+  redis:
+    host: localhost
+    password: li123456
+    port: 6379
   cloud:
     nacos:
       discovery:
@@ -49,6 +53,14 @@ spring:
           filters:
             # 配合Path进行使用,表示去掉Path中的前缀的个数
             - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                # 令牌桶每秒填充平均速率
+                redis-rate-limiter.replenishRate: 1
+                # 令牌桶上限
+                redis-rate-limiter.burstCapacity: 2
+                # 指定解析器
+                redis-rate-limiter.key-resolver: "#{@pathKeyResolver}"
             # - CustomLocationFilterOfParameter=Lee, Lee1
             # 设置响应头参数
             # - AddResponseHeader=X-Response-Default-Name, rectorLee
